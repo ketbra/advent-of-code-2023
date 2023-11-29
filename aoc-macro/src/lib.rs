@@ -18,7 +18,7 @@ pub fn main(_args: TokenStream, input: TokenStream) -> TokenStream {
       fn _aoc_main_main() -> anyhow::Result<()> {
           // let this_file = file!();
 
-          let year = 2020;
+          let year = 2023;
           // println!("defined in file: {this_file}");
 
           let (_, day) = lazy_regex::regex_captures!(r#"day(\d+).rs$"#, file!())
