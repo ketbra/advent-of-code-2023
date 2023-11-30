@@ -1,7 +1,16 @@
 use anyhow::{Context, Result};
 pub use aoc_macro::main;
+use clap::Parser;
+use std::fmt::Display;
 use std::str::FromStr;
 use std::vec::Vec;
+
+/// Arguments
+#[derive(Parser)]
+pub struct Cli {
+    #[arg(long)]
+    pub submit: bool,
+}
 
 // Define our error types. These may be customized for our error handling cases.
 // Now we will be able to write our own errors, defer to an underlying error
@@ -18,6 +27,10 @@ impl std::fmt::Display for NoSolutionError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "Failed to find a solution")
     }
+}
+
+pub fn get_cli_args() -> Cli {
+    Cli::parse()
 }
 
 pub fn parse_u32_list(input: &str) -> Result<Vec<u32>> {
@@ -37,9 +50,28 @@ fn get_input(day: usize, year: usize) -> Result<String> {
     elv::get_input(day, year, None)
 }
 
-pub fn get_input_for_script(path: &str) -> Result<String> {
-    let (_, year, day) = lazy_regex::regex_captures!(r#"/(\d{4})/src/bin/day(\d+).rs$"#, path)
-        .context("File must be named YYYY/src/bin/day\\d+.rs")?;
+pub fn submit_script<T>(path: &str, answer: &T) -> Result<()>
+where
+    T: Display + ?Sized,
+{
+    let puzzle = puzzle_from_file_name(path)?;
+    submit(puzzle.day, puzzle.year, &answer.to_string(), puzzle.part)
+}
+
+fn submit(day: usize, year: usize, answer: &str, part: u8) -> Result<()> {
+    elv::submit(day, year, answer, part, None)
+}
+
+struct Puzzle {
+    day: usize,
+    year: usize,
+    part: u8,
+}
+
+fn puzzle_from_file_name(path: &str) -> Result<Puzzle> {
+    let (_, year, day, part) =
+        lazy_regex::regex_captures!(r#"/(\d{4})/src/bin/day(\d+)(?:_part(\d))?.rs$"#, path)
+            .context("File must be named YYYY/src/bin/day\\d+.rs")?;
     let day = day
         .parse::<usize>()
         .with_context(|| format!("Failed to parse day, {}", day))?;
@@ -47,8 +79,21 @@ pub fn get_input_for_script(path: &str) -> Result<String> {
         .parse::<usize>()
         .with_context(|| format!("Failed to parse year, {}", year))?;
 
+    let part = if !part.is_empty() {
+        part.parse::<u8>()
+            .with_context(|| format!("Failed to parse part, {}", part))?
+    } else {
+        1
+    };
+
+    Ok(Puzzle { day, year, part })
+}
+
+pub fn get_input_for_script(path: &str) -> Result<String> {
+    let puzzle = puzzle_from_file_name(path)?;
+
     let home_dir = std::env::var("HOME")?;
-    let cache_fn = format!("{}/.aoc/{}/{}.inp", home_dir, year, day);
+    let cache_fn = format!("{}/.aoc/{}/{}.inp", home_dir, puzzle.year, puzzle.day);
     println!("Cache file={}", cache_fn);
     let input_cache_path = std::path::Path::new(&cache_fn);
     if !input_cache_path.exists() {
@@ -57,7 +102,7 @@ pub fn get_input_for_script(path: &str) -> Result<String> {
         std::fs::create_dir_all(input_cache_path.parent().unwrap()).unwrap();
 
         // Download and save the data
-        let input = get_input(day, year)?;
+        let input = get_input(puzzle.day, puzzle.year)?;
         std::fs::File::create(input_cache_path)?;
         std::fs::write(input_cache_path, input)?;
     }

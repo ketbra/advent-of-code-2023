@@ -17,7 +17,7 @@ pub fn main(_args: TokenStream, input: TokenStream) -> TokenStream {
           println!("Verifying test");
           tests()?;
 
-          println!("Test passes.  Proceeding to test personal input\n");
+          println!("Tests pass.  Proceeding to run with personal input file\n");
           let input = aoc::get_input_for_script(file!())?;
 
           let now = ::std::time::Instant::now();
@@ -30,6 +30,15 @@ pub fn main(_args: TokenStream, input: TokenStream) -> TokenStream {
               println!("Time: {}ms", elapsed.as_millis());
           } else {
               println!("Time: {}μs", elapsed.as_micros());
+          }
+
+          let args = aoc::get_cli_args();
+          if args.submit {
+              println!("Auto-submitting");
+              aoc::submit_script(file!(), &answer)?;
+          }
+          else {
+              println!("To submit, rerun with --submit-last");
           }
 
           Ok(())

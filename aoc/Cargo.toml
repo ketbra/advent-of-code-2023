@@ -16,3 +16,4 @@ petgraph = "0.6.4"
 rayon = "1.8.0"
 aoc-macro = { path = "../aoc-macro" }
 elv = "0.13.2"
+clap = { version = "4.4.6", features = ["derive"] }

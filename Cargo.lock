@@ -131,6 +131,7 @@ dependencies = [
  "anyhow",
  "aoc-macro",
  "cached",
+ "clap",
  "elv",
  "itertools",
  "lazy-regex",
