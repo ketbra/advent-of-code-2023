@@ -1,10 +1,19 @@
 use anyhow::{Context, Result};
 pub use aoc_macro::main;
+use std::str::FromStr;
 use std::vec::Vec;
 
 pub fn parse_u32_list(input: &str) -> Result<Vec<u32>> {
     let vals: Result<Vec<_>, _> = input.lines().map(|val| val.parse::<u32>()).collect();
     Ok(vals?)
+}
+
+pub fn parse_list<T>(input: &str) -> std::result::Result<Vec<T>, <T as FromStr>::Err>
+where
+    T: FromStr,
+{
+    let vals: Result<Vec<_>, _> = input.lines().map(|val| val.parse::<T>()).collect();
+    vals
 }
 
 fn get_input(day: usize, year: usize) -> Result<String> {
