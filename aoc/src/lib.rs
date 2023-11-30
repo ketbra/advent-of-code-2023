@@ -3,6 +3,23 @@ pub use aoc_macro::main;
 use std::str::FromStr;
 use std::vec::Vec;
 
+// Define our error types. These may be customized for our error handling cases.
+// Now we will be able to write our own errors, defer to an underlying error
+// implementation, or do something in between.
+#[derive(Debug, Clone)]
+pub struct NoSolutionError;
+
+// Generation of an error is completely separate from how it is displayed.
+// There's no need to be concerned about cluttering complex logic with the display style.
+//
+// Note that we don't store any extra info about the errors. This means we can't state
+// which string failed to parse without modifying our types to carry that information.
+impl std::fmt::Display for NoSolutionError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Failed to find a solution")
+    }
+}
+
 pub fn parse_u32_list(input: &str) -> Result<Vec<u32>> {
     let vals: Result<Vec<_>, _> = input.lines().map(|val| val.parse::<u32>()).collect();
     Ok(vals?)

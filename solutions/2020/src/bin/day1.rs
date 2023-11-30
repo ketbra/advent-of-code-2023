@@ -1,7 +1,7 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 #[aoc::main]
-fn main(input: &str) -> Result<u32> {
+fn solve(input: &str) -> Result<u32> {
     println!("Running day 1 with input of size {} bytes", input.len());
 
     let vals: Vec<u32> = aoc::parse_list(input)?;
@@ -13,11 +13,10 @@ fn main(input: &str) -> Result<u32> {
         }
     }
 
-    Ok(5)
+    bail!("No solution found")
 }
 
-#[test]
-fn test1() -> anyhow::Result<()> {
+fn tests() -> anyhow::Result<()> {
     let input = "1721
 979
 366

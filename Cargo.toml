@@ -6,5 +6,11 @@ members = [
     "aoc-macro",
     "solutions/2023",
     "solutions/2022",
+    "solutions/2021",
     "solutions/2020",
+    "solutions/2019",
+    "solutions/2018",
+    "solutions/2017",
+    "solutions/2016",
+    "solutions/2015",
 ]

@@ -149,7 +149,55 @@ dependencies = [
 ]
 
 [[package]]
+name = "aoc2015"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+]
+
+[[package]]
+name = "aoc2016"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+]
+
+[[package]]
+name = "aoc2017"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+]
+
+[[package]]
+name = "aoc2018"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+]
+
+[[package]]
+name = "aoc2019"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+]
+
+[[package]]
 name = "aoc2020"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aoc",
+]
+
+[[package]]
+name = "aoc2021"
 version = "0.1.0"
 dependencies = [
  "anyhow",

@@ -1,17 +1,19 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 #[aoc::main]
-fn main(input: &str) -> Result<u32> {
-    println!("Running day 1 with input of size {} bytes", input.len());
-    Ok(1)
+fn solve(input: &str) -> Result<u32> {
+    let vals: Vec<u32> = aoc::parse_list(input)?;
+    let mut answer = 0;
+    for num1 in &vals {}
+
+    bail!("No solution found")
 }
 
-#[test]
-fn test1() -> anyhow::Result<()> {
+fn tests() -> anyhow::Result<()> {
     let input = "";
 
     let solution = solve(input)?;
 
-    assert_eq!(solution, 999999);
+    assert_eq!(solution, 314159);
     Ok(())
 }

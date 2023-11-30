@@ -12,6 +12,12 @@ pub fn main(_args: TokenStream, input: TokenStream) -> TokenStream {
       // const INPUT: &str = include_str!(#input_path);
       #solve_function
       fn main() -> anyhow::Result<()> {
+
+          // Make sure test case works before proceeding
+          println!("Verifying test");
+          tests()?;
+
+          println!("Test passes.  Proceeding to test personal input\n");
           let input = aoc::get_input_for_script(file!())?;
 
           let now = ::std::time::Instant::now();
