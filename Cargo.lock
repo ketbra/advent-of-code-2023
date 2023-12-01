@@ -219,6 +219,11 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "aoc",
+ "cached",
+ "itertools",
+ "lazy-regex",
+ "nom",
+ "pathfinding",
 ]
 
 [[package]]

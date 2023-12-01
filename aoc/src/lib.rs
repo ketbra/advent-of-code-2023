@@ -46,6 +46,26 @@ where
     vals
 }
 
+pub fn parse_grouped_list<T>(input: &str) -> std::result::Result<Vec<Vec<T>>, <T as FromStr>::Err>
+where
+    T: FromStr,
+{
+    let mut lists = Vec::new();
+    let mut last_group = Vec::new();
+    for line in input.lines() {
+        if line.is_empty() && !last_group.is_empty() {
+            lists.push(last_group);
+            last_group = Vec::new();
+        } else {
+            last_group.push(line.parse::<T>()?);
+        }
+    }
+    if !last_group.is_empty() {
+        lists.push(last_group);
+    }
+    Ok(lists)
+}
+
 fn get_input(day: usize, year: usize) -> Result<String> {
     elv::get_input(day, year, None)
 }
