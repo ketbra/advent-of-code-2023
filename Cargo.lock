@@ -224,6 +224,7 @@ dependencies = [
  "lazy-regex",
  "nom",
  "pathfinding",
+ "rayon",
 ]
 
 [[package]]
