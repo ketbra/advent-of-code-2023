@@ -139,6 +139,7 @@ dependencies = [
  "pathfinding",
  "petgraph",
  "rayon",
+ "regex",
 ]
 
 [[package]]

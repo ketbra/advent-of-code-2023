@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 pub use aoc_macro::main;
 use clap::Parser;
+use regex::Regex;
 use std::fmt::Display;
 use std::str::FromStr;
 use std::vec::Vec;
@@ -17,6 +18,51 @@ pub struct Cli {
 // implementation, or do something in between.
 #[derive(Debug, Clone)]
 pub struct NoSolutionError;
+
+pub struct DenseGrid2D<T> {
+    cells: Vec<Vec<T>>,
+    rows: usize,
+    cols: usize,
+}
+
+impl<T> DenseGrid2D<T> {
+    fn get(&self, x: &usize, y: &usize) -> Option<&T> {
+        if *x >= self.cols || *y >= self.rows {
+            None
+        } else {
+            Some(&self.cells[*y][*x])
+        }
+    }
+}
+
+// Add regex methods to ToString types
+pub trait Searchable {
+    fn rematch(&self, needle: &str) -> bool;
+    fn recapture(&self, needle: &str) -> Option<Vec<&str>>;
+}
+
+impl Searchable for std::string::String {
+    fn rematch(&self, rx: &str) -> bool {
+        let re = Regex::new(rx).unwrap();
+        match re.captures(self.to_string().as_str()) {
+            Some(captures) => true,
+            None => false,
+        }
+    }
+    fn recapture(&self, needle: &str) -> Option<Vec<&str>> {
+        let re = Regex::new(needle).unwrap();
+        match re.captures(self) {
+            Some(captures) => Some(
+                captures
+                    .iter()
+                    .skip(1) // Skip the first capture group (the entire match)
+                    .filter_map(|capture| capture.map(|c| c.as_str()))
+                    .collect::<Vec<_>>(),
+            ),
+            None => None,
+        }
+    }
+}
 
 // Generation of an error is completely separate from how it is displayed.
 // There's no need to be concerned about cluttering complex logic with the display style.

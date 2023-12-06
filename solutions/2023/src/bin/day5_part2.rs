@@ -88,28 +88,28 @@ fn solve(input: &str) -> Result<u64> {
     let answer = min_location.unwrap();
     Ok(answer)
 }
+/*
+fn compress_coordinates(orig: Vec<u64>) -> CompressedCoordinates {
+    let mut set: HashSet<u64> = HashSet::new();
+    for x in orig {
+        set.insert(x);
+    }
 
-// fn compress_coordinates(orig: Vec<u64>) -> CompressedCoordinates {
-//     let mut set: HashSet<u64> = HashSet::new();
-//     for x in orig {
-//         set.insert(x);
-//     }
+    let sorted_orig: Vec<_> = set.iter().sorted().collect();
+    let mut to_compressed: HashMap<u64, u64> = HashMap::new();
+    let mut to_orig: HashMap<u64, u64> = HashMap::new();
+    for (i, val) in sorted_orig.into_iter().enumerate() {
+        to_compressed.insert(*val, i as u64);
+        to_orig.insert(i as u64, *val);
+    }
 
-//     let sorted_orig: Vec<_> = set.iter().sorted().collect();
-//     let mut to_compressed: HashMap<u64, u64> = HashMap::new();
-//     let mut to_orig: HashMap<u64, u64> = HashMap::new();
-//     for (i, val) in sorted_orig.into_iter().enumerate() {
-//         to_compressed.insert(*val, i as u64);
-//         to_orig.insert(i as u64, *val);
-//     }
-
-//     CompressedCoordinates {
-//         orig: set,
-//         to_compressed,
-//         to_orig,
-//     }
-// }
-
+    CompressedCoordinates {
+        orig: set,
+        to_compressed,
+        to_orig,
+    }
+}
+*/
 fn get_location(
     seed: &u64,
     seed_to_soil_map: &Vec<Range>,

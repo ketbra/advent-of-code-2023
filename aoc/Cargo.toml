@@ -17,3 +17,4 @@ rayon = "1.8.0"
 aoc-macro = { path = "../aoc-macro" }
 elv = "0.13.2"
 clap = { version = "4.4.6", features = ["derive"] }
+regex = "1.10.2"
