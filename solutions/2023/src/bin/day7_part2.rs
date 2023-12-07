@@ -9,6 +9,16 @@ struct Hand {
     bid: u64,
 }
 
+enum HandType {
+    HighCard,
+    Pair,
+    TwoPair,
+    ThreeOfAKind,
+    FullHouse,
+    FourOfAKind,
+    FiveOfAKind,
+}
+
 #[aoc::main]
 fn solve(input: &str) -> Result<u64> {
     let lines = aoc::parse_list::<String>(input)?;
@@ -49,8 +59,6 @@ fn solve(input: &str) -> Result<u64> {
         answer += hand.bid * (i as u64 + 1);
     }
 
-    println!("{:?}", hands);
-
     Ok(answer)
 }
 
@@ -79,47 +87,27 @@ fn hand_rank(cards: &[char]) -> u64 {
         map[key_with_max_value.0] + (joker_count as u8),
     );
 
-    let mut has_pair = false;
-    let mut has_2_pair = false;
-    let mut has_triple = false;
-    let mut has_4 = false;
-    let mut has_5 = false;
-
+    let mut hand_type = HandType::HighCard;
     map.values().for_each(|val| {
         if *val == 5 {
-            has_5 = true;
+            hand_type = HandType::FiveOfAKind;
         } else if *val == 4 {
-            has_4 = true;
+            hand_type = HandType::FourOfAKind;
         } else if *val == 3 {
-            has_triple = true;
+            hand_type = match hand_type {
+                HandType::Pair => HandType::FullHouse,
+                _ => HandType::ThreeOfAKind,
+            };
         } else if *val == 2 {
-            if has_pair {
-                has_2_pair = true;
-            } else {
-                has_pair = true;
-            }
+            hand_type = match hand_type {
+                HandType::ThreeOfAKind => HandType::FullHouse,
+                HandType::Pair => HandType::TwoPair,
+                _ => HandType::Pair,
+            };
         }
     });
 
-    if has_5 {
-        return 6;
-    }
-    if has_4 {
-        return 5;
-    }
-    if has_triple && has_pair {
-        return 4;
-    }
-    if has_triple {
-        return 3;
-    }
-    if has_2_pair {
-        return 2;
-    }
-    if has_pair {
-        return 1;
-    }
-    0
+    hand_type as u64
 }
 
 fn tests() -> anyhow::Result<()> {
