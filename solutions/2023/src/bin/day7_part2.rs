@@ -5,10 +5,11 @@ use std::collections::HashMap;
 #[derive(Debug)]
 struct Hand {
     cards: Vec<char>,
-    rank: u64,
+    hand_type: HandType,
     bid: u64,
 }
 
+#[derive(Debug, PartialEq, Eq, PartialOrd)]
 enum HandType {
     HighCard,
     Pair,
@@ -36,23 +37,27 @@ fn solve(input: &str) -> Result<u64> {
     for line in lines {
         let v: Vec<_> = line.split_whitespace().collect();
         let cards = v[0].chars().collect_vec();
-        let bid = v[1].parse::<u64>().unwrap();
-        let rank = hand_rank(&cards);
-
-        hands.push(Hand { cards, bid, rank });
+        let hand_type = hand_type(&cards);
+        hands.push(Hand {
+            cards,
+            bid: v[1].parse::<u64>().unwrap(),
+            hand_type,
+        });
     }
 
-    hands.sort_unstable_by(|a, b| match a.rank.cmp(&b.rank) {
-        std::cmp::Ordering::Equal => {
-            for i in 0..5 {
-                if card_weights[&a.cards[i]] != card_weights[&b.cards[i]] {
-                    return card_weights[&a.cards[i]].cmp(&card_weights[&b.cards[i]]);
+    hands.sort_unstable_by(
+        |a, b| match a.hand_type.partial_cmp(&b.hand_type).unwrap() {
+            std::cmp::Ordering::Equal => {
+                for i in 0..5 {
+                    if card_weights[&a.cards[i]] != card_weights[&b.cards[i]] {
+                        return card_weights[&a.cards[i]].cmp(&card_weights[&b.cards[i]]);
+                    }
                 }
+                std::cmp::Ordering::Equal
             }
-            std::cmp::Ordering::Equal
-        }
-        x => x,
-    });
+            x => x,
+        },
+    );
 
     let mut answer = 0;
     for (i, hand) in hands.iter().enumerate() {
@@ -62,12 +67,12 @@ fn solve(input: &str) -> Result<u64> {
     Ok(answer)
 }
 
-fn hand_rank(cards: &[char]) -> u64 {
+fn hand_type(cards: &[char]) -> HandType {
     // Get joker count
     let joker_count = cards.iter().filter(|x| **x == 'J').count();
 
     if joker_count == 5 {
-        return 6;
+        return HandType::FiveOfAKind;
     }
 
     // Always makes sense to replace the second most popular card
@@ -107,7 +112,7 @@ fn hand_rank(cards: &[char]) -> u64 {
         }
     });
 
-    hand_type as u64
+    hand_type
 }
 
 fn tests() -> anyhow::Result<()> {
