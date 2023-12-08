@@ -54,6 +54,9 @@ fn solve(input: &str) -> Result<u64> {
             break;
         }
 
+        // Noticed that you get into a state where a state moves to the same state, so should just use the LCM
+        // though never got a chance to implement this since Rust found the solution through brute force first
+
         for state in &mut states {
             while state.step < max_step {
                 let new_state = move_to_next_z(state, &instructions, &transitions, &mut cache);
