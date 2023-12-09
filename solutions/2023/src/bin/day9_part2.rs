@@ -35,9 +35,7 @@ fn solve(input: &str) -> Result<i64> {
 }
 
 fn get_next_sequence(sequence: &[i64]) -> Vec<i64> {
-    (0..(sequence.len() - 1))
-        .map(|i| sequence[i + 1] - sequence[i])
-        .collect_vec()
+    sequence.windows(2).map(|w| w[1] - w[0]).collect_vec()
 }
 
 fn tests() -> anyhow::Result<()> {
