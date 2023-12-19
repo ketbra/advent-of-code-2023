@@ -205,20 +205,20 @@ fn get_accepted_count(range: &PartRange, workflows: &HashMap<String, Workflow>) 
                         ),
                         (M, GreaterThan) => (
                             PartRange {
-                                x: Range {
+                                x,
+                                m: Range {
                                     min: threshold + 1,
-                                    max: x.max,
+                                    max: m.max,
                                 },
-                                m,
                                 a,
                                 s,
                             },
                             PartRange {
-                                x: Range {
-                                    min: x.min,
+                                x,
+                                m: Range {
+                                    min: m.min,
                                     max: *threshold,
                                 },
-                                m,
                                 a,
                                 s,
                             },
@@ -276,11 +276,11 @@ fn get_accepted_count(range: &PartRange, workflows: &HashMap<String, Workflow>) 
                             PartRange {
                                 x,
                                 m,
-                                a,
-                                s: Range {
+                                a: Range {
                                     min: *threshold,
-                                    max: s.max,
+                                    max: a.max,
                                 },
+                                s,
                             },
                         ),
                         (S, GreaterThan) => (
@@ -294,33 +294,33 @@ fn get_accepted_count(range: &PartRange, workflows: &HashMap<String, Workflow>) 
                                 },
                             },
                             PartRange {
-                                x: Range {
-                                    min: x.min,
-                                    max: *threshold,
-                                },
+                                x,
                                 m,
                                 a,
-                                s,
+                                s: Range {
+                                    min: s.min,
+                                    max: *threshold,
+                                },
                             },
                         ),
                         (S, LessThan) => (
                             PartRange {
-                                x: Range {
-                                    min: x.min,
+                                x,
+                                m,
+                                a,
+                                s: Range {
+                                    min: s.min,
                                     max: threshold - 1,
                                 },
-                                m,
-                                a,
-                                s,
                             },
                             PartRange {
-                                x: Range {
-                                    min: *threshold,
-                                    max: x.max,
-                                },
+                                x,
                                 m,
                                 a,
-                                s,
+                                s: Range {
+                                    min: *threshold,
+                                    max: s.max,
+                                },
                             },
                         ),
                     };
