@@ -2,6 +2,7 @@ use anyhow::Result;
 use itertools::Itertools;
 use lazy_regex::regex_captures;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::collections::VecDeque;
 use PulseType::*;
 
@@ -104,152 +105,71 @@ fn solve(input: &str) -> Result<usize> {
         }
     }
 
-    // // Print out the modules for graphviz
-    // for m in modules.values() {
-    //     for dest in &m.recipients {
-    //         println!("{} -> {};", m.name, dest);
-    //     }
-    // }
-    // panic!("Done");
-    let mut answer = 0;
-    let interesting_nodes = ["lk", "zv", "xt", "sp"];
-    // let conjunctions = ["jc", "vv", "dv", "xq"];
+    let rx_trigger = modules
+        .values()
+        .find(|m| m.recipients.contains(&"rx".to_string()))
+        .unwrap();
 
-    // // These conjunction inputs are n bit counters, so figure out how big each counter is
-    // let mut counter_lengths = Vec::new();
-    // for name in &conjunctions {
-    //     let m = modules.get(*name).unwrap();
-    //     if let Some(Module {
-    //         recipients: _,
-    //         name: _,
-    //         module_type: ModuleType::Conjunction { input_states },
-    //     }) = modules.get(*name)
-    //     {
-    //         println!("{name} has {} inputs", input_states.len());
-    //         counter_lengths.push(2_u64.pow(input_states.len() as u32));
-    //     }
-    // }
+    // RX is triggered by a conjunction.  We will find the input nodes
+    // to that conjunction and determine the periods for those input
+    // nodes.  Those input nodes are the output of counter counter
+    // circuits each with a different period.  When they all trigger
+    // concurrently, then the rx_trigger conjunction triggers and
+    // subsequently rx does as well.
+    let mut interesting_nodes = HashSet::new();
+    if let ModuleType::Conjunction { input_states } = &rx_trigger.module_type {
+        interesting_nodes = input_states
+            .keys()
+            .map(|x| x.to_string())
+            .collect::<HashSet<_>>();
+    }
+
+    println!("Counter outputs: {interesting_nodes:?}");
 
     let mut press_count = 0;
+    let mut periods = Vec::new();
     loop {
-        answer += 1;
         press_count += 1;
-        let rx_count = perform_button_press(&mut modules, press_count);
-        if rx_count == 1 {
+        let triggered_nodes = perform_button_press(&mut modules, &interesting_nodes);
+        for name in triggered_nodes {
+            periods.push(press_count);
+            interesting_nodes.remove(&name);
+        }
+
+        // If we've found all of the periods, then stop searching
+        if interesting_nodes.is_empty() {
             break;
         }
-
-        for name in &interesting_nodes {
-            let m = modules.get(*name).unwrap();
-            // println!("{m:?}");
-            if let Some(Module {
-                recipients: _,
-                name: _,
-                module_type: ModuleType::FlipFlop { on, flips: _ },
-            }) = modules.get(*name)
-            {
-                println!("{name} is {on} inputs");
-            }
-        }
-
-        // print_states(&modules);
-
-        // for name in &conjunctions {
-        // for name in &["jc"] {
-        //     let m = modules.get(*name).unwrap();
-        //     if let Some(Module {
-        //         recipients: _,
-        //         name: _,
-        //         module_type: ModuleType::Conjunction { input_states },
-        //     }) = modules.get(*name)
-        //     {
-        //         println!(
-        //             "{name}:{}",
-        //             input_states
-        //                 .keys()
-        //                 .sorted()
-        //                 .map(|key| {
-        //                     if *input_states.get(key).unwrap() == High {
-        //                         '1'
-        //                     } else {
-        //                         '0'
-        //                     }
-        //                 })
-        //                 .join("")
-        //         );
-        //         // println!("{name} is on at press {answer}");
-        //     }
-
-        //     // for recipient in &m.recipients {}
-        //     // if let Some(Module {
-        //     //     recipients: _,
-        //     //     name: _,
-        //     //     module_type: ModuleType::FlipFlop { on: true, flips: _ },
-        //     // }) = modules.get(*name)
-        //     // {
-        //     //     println!("{name} is on at press {answer}");
-        //     // }
-        // }
-
-        if answer % 100000 == 0 {
-            println!("{answer}");
-        }
     }
+
+    println!("Counter periods: {periods:?}");
+
+    // The periods appear to be prime in my data, so just multiplying
+    // them should be the answer.  Still, the lcm could be used for
+    // robustnuess in case the numbers aren't at least coprime.  For
+    // additional robustness we could verify that we weren't partially
+    // through a counter cycle for our initial condition.  Again, this
+    // seems unnecessary given the actual input file I received, but
+    // it could be added for robustness.
+
+    let answer = periods.iter().product();
 
     Ok(answer)
 }
 
-fn print_states(modules: &HashMap<String, Module>) {
-    // Find all flip flops and print the states
-    let mut flipflops = modules
-        .values()
-        .filter_map(|m| match &m.module_type {
-            ModuleType::FlipFlop { on: _, flips } => Some((m, *flips)),
-            _ => None,
-        })
-        .collect_vec();
-
-    flipflops.sort_unstable_by_key(|t| t.1);
-    let s = flipflops
-        .iter()
-        .map(|t| match t.0.module_type {
-            ModuleType::FlipFlop { on: true, flips: _ } => '1',
-            _ => '0',
-        })
-        .join("");
-
-    println!("{s}");
-}
-
-fn perform_button_press(modules: &mut HashMap<String, Module>, press_count: usize) -> usize {
-    let mut lp = 0;
-    let mut hp = 0;
-    let mut rx_count = 0;
-
+fn perform_button_press(
+    modules: &mut HashMap<String, Module>,
+    interesting_nodes: &HashSet<String>,
+) -> HashSet<String> {
+    let mut triggered_interesting_nodes = HashSet::new();
     let mut deque: VecDeque<Vec<_>> = VecDeque::new();
     deque.push_back(vec![("button".to_string(), "broadcaster".to_string(), Low)]);
     while let Some(generation) = deque.pop_front() {
-        // println!();
-        // println!();
-        // println!("Start Generation");
         let mut new_generation = Vec::new();
         for (source, dest, pulse) in generation {
-            if dest == "dg" && pulse == High {
-                println!("{press_count}: dg received a High from {source}");
+            if interesting_nodes.contains(&dest) && pulse == Low {
+                triggered_interesting_nodes.insert(dest.to_string());
             }
-
-            // Increment the pulse counts
-            match pulse {
-                High => hp += 1,
-                Low => lp += 1,
-            };
-
-            // println!("{dest} received {pulse:?}");
-
-            if dest == "rx" && matches!(pulse, Low) {
-                rx_count += 1;
-            }
-
             if let Some(m) = modules.get_mut(&dest) {
                 match m.module_type {
                     ModuleType::Broadcaster => {
@@ -282,7 +202,6 @@ fn perform_button_press(modules: &mut HashMap<String, Module>, press_count: usiz
                         input_states: ref mut inputs,
                     } => {
                         inputs.insert(source.to_string(), pulse.clone());
-                        // println!("{inputs:?}");
                         let new_pulse = if inputs.values().all(|p| *p == High) {
                             Low
                         } else {
@@ -304,34 +223,9 @@ fn perform_button_press(modules: &mut HashMap<String, Module>, press_count: usiz
             deque.push_back(new_generation);
         }
     }
-
-    rx_count
+    triggered_interesting_nodes
 }
 
 fn tests() -> anyhow::Result<()> {
-    //     let input = r"broadcaster -> a, b, c
-    // %a -> b
-    // %b -> c
-    // %c -> inv
-    // &inv -> a
-    // ";
-
-    //     let solution = solve(input)?;
-
-    //     assert_eq!(solution, 32000000);
-
-    //     println!("Test 1 passed");
-    //     let input = r"broadcaster -> a
-    // %a -> inv, con
-    // &inv -> b
-    // %b -> con
-    // &con -> output
-    // ";
-
-    //     let solution = solve(input)?;
-
-    //     assert_eq!(solution, 11687500);
-    //     println!("Test 2 passed");
-
     Ok(())
 }
