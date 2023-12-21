@@ -19,7 +19,8 @@ fn solve(input: &str) -> Result<usize> {
         .to_owned()
         .collect_vec();
 
-    let marked_map = mark_reachable(&map, 64);
+    let marked_map = mark_reachable(&map, 9000);
+    print_map(&marked_map);
 
     let answer = count_marked_plots(&marked_map);
 
@@ -37,7 +38,6 @@ fn print_map(map: &[Vec<char>]) {
 
 fn mark_reachable(map: &[Vec<char>], max_steps: usize) -> Vec<Vec<char>> {
     let mut new_map = map.to_vec();
-    let mark_mod = max_steps % 2;
 
     let mut seen = HashSet::new();
     let mut queue = VecDeque::new();
@@ -61,9 +61,10 @@ fn mark_reachable(map: &[Vec<char>], max_steps: usize) -> Vec<Vec<char>> {
     seen.insert((0, pos.clone()));
     queue.push_back((0, pos));
 
-    let mut work = 0;
     while let Some((steps, pos)) = queue.pop_front() {
-        work += 1;
+        if steps % 1000 == 0 {
+            println!("{steps}");
+        }
         for [dj, di] in [[0, 1], [0, -1], [1, 0], [-1, 0]] {
             let (new_row, new_col) = (pos.row as isize + dj, pos.col as isize + di);
             if new_row >= 0 && new_col >= 0 {
@@ -76,14 +77,13 @@ fn mark_reachable(map: &[Vec<char>], max_steps: usize) -> Vec<Vec<char>> {
                     };
 
                     let new_steps = steps + 1;
-                    let new_state = (new_steps % 2, new_pos.clone());
+                    let new_state = (new_steps, new_pos.clone());
                     if !seen.contains(&new_state) {
                         seen.insert(new_state);
                         if map[new_row][new_col] != '#' {
-                            if new_steps % 2 == mark_mod {
+                            if new_steps == max_steps {
                                 new_map[new_row][new_col] = 'O';
-                            }
-                            if new_steps != max_steps {
+                            } else {
                                 queue.push_back((new_steps, new_pos));
                                 // new_map[new_row][new_col] = 'O';
                             }
@@ -94,7 +94,6 @@ fn mark_reachable(map: &[Vec<char>], max_steps: usize) -> Vec<Vec<char>> {
         }
     }
 
-    println!("Work done={work}");
     new_map
 }
 
