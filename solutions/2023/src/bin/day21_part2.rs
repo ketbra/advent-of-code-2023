@@ -87,15 +87,25 @@ fn part2(input: &str, max_steps: usize) -> Result<usize> {
         sw_point.clone(),
     ];
 
+    let max_fill = [
+        get_max_fill_count(&map, Even),
+        get_max_fill_count(&map, Odd),
+    ];
+
     // Count all but middle row and column
     println!("Adding 4 corners");
     let mut answer = 0;
-    let mut steps_left = max_steps;
-    while steps_left > width {
-        steps_left -= width;
+
+    // First move to closest corner of diagonal tile
+    let mut steps_left = (max_steps - width - 1) as isize;
+    while steps_left > 0 {
+        // Add the columns for each of the 4 diagonal directions
         for pos in &corner_points {
-            answer += get_reachable_count_above(&map, pos, steps_left, &mut cache);
+            answer +=
+                get_reachable_count_above(&map, pos, steps_left as usize, &mut cache, &max_fill);
         }
+
+        steps_left -= width as isize;
     }
 
     // Add middle tile
@@ -115,21 +125,56 @@ fn part2(input: &str, max_steps: usize) -> Result<usize> {
     };
     while steps_left > width {
         steps_left -= width;
+
+        // if steps_left > 1000 {
+        //     answer += 2 * max_fill[(steps_left + 1) % 2];
+        // } else {
         answer += count_reachable(&map, &pos_left, max_steps);
         answer += count_reachable(&map, &pos_right, max_steps);
+        // }
     }
 
-    // Add rest of middle column
-    println!("Adding rest of middle column");
-    let mut steps_left = max_steps - height;
-    let starts_up = [&se_point, &sw_point];
-    let starts_down = [&ne_point, &nw_point];
+    println!("Adding rest of middle col");
+    let mut steps_left = max_steps - ((height - 1) / 2) - 1;
+    let pos_up = Pos {
+        row: height - 1,
+        col: start_pos.col,
+    };
+    let pos_down = Pos {
+        row: 0,
+        col: start_pos.col,
+    };
+
     while steps_left > height {
         steps_left -= height;
 
-        answer += count_reachable_multiple(&map, &starts_up, steps_left);
-        answer += count_reachable_multiple(&map, &starts_down, steps_left);
+        // if steps_left > 1000 {
+        //     answer += 2 * max_fill[(steps_left + 1) % 2];
+        // } else {
+        answer += count_reachable(&map, &pos_up, max_steps);
+        answer += count_reachable(&map, &pos_down, max_steps);
+        // }
     }
+
+    // let fill_counts = determine_min_fill_counts(&map, &max_fill);
+
+    // println!("{fill_counts:?}");
+
+    // // Add rest of middle column
+    // println!("Adding rest of middle column");
+    // let mut steps_left = max_steps - height;
+    // let starts_up = [&se_point, &sw_point];
+    // let starts_down = [&ne_point, &nw_point];
+    // while steps_left > height {
+    //     steps_left -= height;
+
+    //     // if steps_left > 1000 {
+    //     //     answer += 2 * max_fill[(steps_left + 1) % 2];
+    //     // } else {
+    //     answer += count_reachable_multiple(&map, &starts_up, steps_left);
+    //     answer += count_reachable_multiple(&map, &starts_down, steps_left);
+    //     // }
+    // }
 
     Ok(answer)
 }
@@ -139,6 +184,7 @@ fn get_reachable_count_above(
     pos: &Pos,
     steps_left: usize,
     cache: &mut HashMap<(Pos, usize), usize>,
+    max_fill: &[usize],
 ) -> usize {
     let mut cache_key = (pos.clone(), steps_left);
     if let Some(x) = cache.get(&cache_key) {
@@ -160,7 +206,11 @@ fn get_reachable_count_above(
         steps_left -= height;
     }
     while steps_left <= max_steps {
+        // if steps_left > 1000 {
+        //     total += max_fill[(steps_left + 1) % 2];
+        // } else {
         total += count_reachable(map, pos, steps_left);
+        // }
         cache.insert((pos.clone(), steps_left), total);
         steps_left += height;
         // println!("{steps_left}, {height}");
