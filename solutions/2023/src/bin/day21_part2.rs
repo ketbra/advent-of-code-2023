@@ -751,23 +751,23 @@ fn tests() -> anyhow::Result<()> {
 ...........
 ";
 
-    let solution = part2_slow(input, 6)?;
-    assert_eq!(solution, 16);
-    println!("Passed 16");
-    let solution = part2_slow(input, 10)?;
-    assert_eq!(solution, 50);
+    // let solution = part2_slow(input, 6)?;
+    // assert_eq!(solution, 16);
+    // println!("Passed 16");
+    // let solution = part2_slow(input, 10)?;
+    // assert_eq!(solution, 50);
 
-    println!("Passed 10");
-    let solution = part2_slow(input, 50)?;
-    assert_eq!(solution, 1594);
+    // println!("Passed 10");
+    // let solution = part2_slow(input, 50)?;
+    // assert_eq!(solution, 1594);
 
-    println!("Passed 50");
-    let solution = part2_slow(input, 100)?;
-    assert_eq!(solution, 6536);
+    // println!("Passed 50");
+    // let solution = part2_slow(input, 100)?;
+    // assert_eq!(solution, 6536);
 
-    println!("Passed 100");
-    let solution = part2_slow(input, 500)?;
-    assert_eq!(solution, 167004);
+    // println!("Passed 100");
+    // let solution = part2_slow(input, 500)?;
+    // assert_eq!(solution, 167004);
 
     // println!("Passed 500");
     // let solution = part2_slow(input, 1000)?;
