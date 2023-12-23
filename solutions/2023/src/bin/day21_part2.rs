@@ -14,6 +14,12 @@ struct Pos {
 }
 
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
+struct IPos {
+    row: isize,
+    col: isize,
+}
+
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 enum Corner {
     NW,
     NE,
@@ -29,8 +35,14 @@ enum Parity {
 
 #[aoc::main]
 fn solve(input: &str) -> Result<usize> {
+    // let steps = 5000;
+    // let expected = part2_slow(input, steps).unwrap();
+    // let got = part2(input, steps).unwrap();
+
+    // assert_eq!(got, expected);
+    // println!("expected ({expected}) == got ({got})");
+
     part2(input, 26501365)
-    // part2(input, 5)
 }
 
 fn part2(input: &str, max_steps: usize) -> Result<usize> {
@@ -42,10 +54,13 @@ fn part2(input: &str, max_steps: usize) -> Result<usize> {
 
     // Get the start position, and replace it with a garden plot
     let mut start_pos = None;
-    let height = map.len();
-    let width = map[0].len();
+    let height = map.len() as isize;
+    let width = map[0].len() as isize;
+    let max_steps = max_steps as isize;
     for j in 0..height {
+        let j = j as usize;
         for i in 0..width {
+            let i = i as usize;
             if map[j][i] == 'S' {
                 start_pos = Some(Pos { row: j, col: i });
                 // Can't step on start since steps are odd
@@ -67,16 +82,16 @@ fn part2(input: &str, max_steps: usize) -> Result<usize> {
 
     let nw_point = Pos { col: 0, row: 0 };
     let ne_point = Pos {
-        col: width - 1,
+        col: width as usize - 1,
         row: 0,
     };
     let sw_point = Pos {
         col: 0,
-        row: height - 1,
+        row: height as usize - 1,
     };
     let se_point = Pos {
-        col: width - 1,
-        row: height - 1,
+        col: width as usize - 1,
+        row: height as usize - 1,
     };
 
     let mut cache = HashMap::new();
@@ -98,83 +113,46 @@ fn part2(input: &str, max_steps: usize) -> Result<usize> {
 
     // First move to closest corner of diagonal tile
     let mut steps_left = (max_steps - width - 1) as isize;
-    while steps_left > 0 {
+    let mut corner_count = 0;
+    while steps_left >= 0 {
         // Add the columns for each of the 4 diagonal directions
         for pos in &corner_points {
-            answer +=
-                get_reachable_count_above(&map, pos, steps_left as usize, &mut cache, &max_fill);
+            corner_count += get_reachable_count_above(&map, pos, steps_left as usize, &mut cache);
         }
 
         steps_left -= width as isize;
     }
+    answer += corner_count;
+    println!("Corner count={corner_count}");
 
-    // Add middle tile
-    println!("Adding middle tile");
-    answer += count_reachable(&map, &start_pos, max_steps);
+    println!("Adding central tile");
+    answer += count_reachable(&map, &start_pos, max_steps as usize);
 
-    // Add rest of middle row
-    println!("Adding rest of middle row");
-    let mut steps_left = max_steps - ((width - 1) / 2) - 1;
+    // Adding middle tiles
+    println!("Adding middle tiles");
     let pos_left = Pos {
         row: start_pos.row,
-        col: width - 1,
+        col: width as usize - 1,
     };
     let pos_right = Pos {
         row: start_pos.row,
         col: 0,
     };
-    while steps_left > width {
-        steps_left -= width;
-
-        // if steps_left > 1000 {
-        //     answer += 2 * max_fill[(steps_left + 1) % 2];
-        // } else {
-        answer += count_reachable(&map, &pos_left, max_steps);
-        answer += count_reachable(&map, &pos_right, max_steps);
-        // }
-    }
-
-    println!("Adding rest of middle col");
-    let mut steps_left = max_steps - ((height - 1) / 2) - 1;
     let pos_up = Pos {
-        row: height - 1,
+        row: height as usize - 1,
         col: start_pos.col,
     };
     let pos_down = Pos {
         row: 0,
         col: start_pos.col,
     };
-
-    while steps_left > height {
-        steps_left -= height;
-
-        // if steps_left > 1000 {
-        //     answer += 2 * max_fill[(steps_left + 1) % 2];
-        // } else {
-        answer += count_reachable(&map, &pos_up, max_steps);
-        answer += count_reachable(&map, &pos_down, max_steps);
-        // }
+    let steps_left = max_steps - ((width - 1) / 2) - 1;
+    dbg!(steps_left);
+    if steps_left >= 0 {
+        for pos in [pos_left, pos_right, pos_up, pos_down] {
+            answer += get_reachable_count_above(&map, &pos, steps_left as usize, &mut cache);
+        }
     }
-
-    // let fill_counts = determine_min_fill_counts(&map, &max_fill);
-
-    // println!("{fill_counts:?}");
-
-    // // Add rest of middle column
-    // println!("Adding rest of middle column");
-    // let mut steps_left = max_steps - height;
-    // let starts_up = [&se_point, &sw_point];
-    // let starts_down = [&ne_point, &nw_point];
-    // while steps_left > height {
-    //     steps_left -= height;
-
-    //     // if steps_left > 1000 {
-    //     //     answer += 2 * max_fill[(steps_left + 1) % 2];
-    //     // } else {
-    //     answer += count_reachable_multiple(&map, &starts_up, steps_left);
-    //     answer += count_reachable_multiple(&map, &starts_down, steps_left);
-    //     // }
-    // }
 
     Ok(answer)
 }
@@ -184,7 +162,6 @@ fn get_reachable_count_above(
     pos: &Pos,
     steps_left: usize,
     cache: &mut HashMap<(Pos, usize), usize>,
-    max_fill: &[usize],
 ) -> usize {
     let mut cache_key = (pos.clone(), steps_left);
     if let Some(x) = cache.get(&cache_key) {
@@ -205,11 +182,43 @@ fn get_reachable_count_above(
         // println!("{steps_left}, {height}");
         steps_left -= height;
     }
+
+    let threshold = 300;
+    let reachable_cache = [
+        count_reachable(map, pos, threshold),
+        count_reachable(map, pos, threshold + 1),
+    ];
+
+    let max_fill = [
+        get_max_fill_count(&map, Even),
+        get_max_fill_count(&map, Odd),
+    ];
+
+    println!("{pos:?}, {reachable_cache:?}, {max_fill:?}");
+
+    // let marked_map = mark_reachable(map, pos, threshold);
+    // print_map(&marked_map);
+    // panic!("Done");
+
     while steps_left <= max_steps {
         // if steps_left > 1000 {
         //     total += max_fill[(steps_left + 1) % 2];
         // } else {
-        total += count_reachable(map, pos, steps_left);
+
+        let reachable = if steps_left > threshold {
+            reachable_cache[steps_left % 2]
+        } else {
+            count_reachable(map, pos, steps_left)
+        };
+
+        // let reachable = count_reachable(map, pos, steps_left);
+
+        // println!(
+        //     "{}, {}",
+        //     reachable,
+        //     count_reachable(map, pos, 300 + (steps_left % 2))
+        // );
+        total += reachable;
         // }
         cache.insert((pos.clone(), steps_left), total);
         steps_left += height;
@@ -558,6 +567,19 @@ fn count_reachable_multiple(map: &[Vec<char>], start: &[&Pos], max_steps: usize)
     count_marked_plots(&marked_map)
 }
 
+fn mark_max_parity(map: &[Vec<char>], start: &Pos, max_steps: usize) -> Vec<Vec<char>> {
+    let mark_mod = (max_steps + start.row + start.col) % 2;
+    let mut new_map = map.to_vec();
+    for (j, row) in new_map.iter_mut().enumerate() {
+        for (i, c) in row.iter_mut().enumerate() {
+            if *c != '#' && (i + j) % 2 == mark_mod {
+                *c = 'O';
+            }
+        }
+    }
+    new_map
+}
+
 fn mark_reachable(map: &[Vec<char>], start: &Pos, max_steps: usize) -> Vec<Vec<char>> {
     let mut new_map = map.to_vec();
     let mark_mod = max_steps % 2;
@@ -570,7 +592,16 @@ fn mark_reachable(map: &[Vec<char>], start: &Pos, max_steps: usize) -> Vec<Vec<c
 
     let mut pos = start;
     // seen.insert((0, pos.clone()));
-    queue.push_back((0, pos.clone()));
+
+    // We can always finish on the current square if we're taking an
+    // even number of steps
+    if mark_mod == 0 {
+        new_map[pos.row][pos.col] = 'O';
+    }
+
+    if max_steps > 0 {
+        queue.push_back((0, pos.clone()));
+    }
 
     let mut work = 0;
     while let Some((steps, pos)) = queue.pop_front() {
@@ -590,7 +621,7 @@ fn mark_reachable(map: &[Vec<char>], start: &Pos, max_steps: usize) -> Vec<Vec<c
                     let new_state = (new_steps % 2, new_pos.clone());
                     if !seen.contains(&new_state) {
                         seen.insert(new_state);
-                        if map[new_row][new_col] != '#' {
+                        if map[new_row][new_col] != '#' || map[new_row][new_col] == 'S' {
                             if new_steps % 2 == mark_mod {
                                 new_map[new_row][new_col] = 'O';
                             }
@@ -615,6 +646,97 @@ fn count_marked_plots(map: &[Vec<char>]) -> usize {
     })
 }
 
+fn part2_slow(input: &str, max_steps: usize) -> Result<usize> {
+    let mut map = aoc::parse_list::<String>(input)?
+        .iter()
+        .map(|x| x.chars().collect_vec())
+        .to_owned()
+        .collect_vec();
+
+    // Get the start position, and replace it with a garden plot
+    let mut start_pos = None;
+    let height = map.len();
+    let width = map[0].len();
+    for j in 0..height {
+        for i in 0..width {
+            if map[j][i] == 'S' {
+                start_pos = Some(IPos {
+                    row: j as isize,
+                    col: i as isize,
+                });
+                // Can't step on start since steps are odd
+                map[j][i] = '.';
+                break;
+            }
+        }
+    }
+
+    // get_reachable_count_above
+
+    // Add left and right columns
+    let start_pos = start_pos.unwrap();
+
+    let mut answer = count_reachable_slow(&map, &start_pos, max_steps);
+
+    Ok(answer)
+}
+
+fn count_reachable_slow(map: &[Vec<char>], start: &IPos, max_steps: usize) -> usize {
+    let mut new_map = map.to_vec();
+    let mark_mod = max_steps % 2;
+
+    let mut seen: HashSet<(isize, isize)> = HashSet::new();
+    let mut queue = VecDeque::new();
+
+    let width = map[0].len() as isize;
+
+    let pos = (start.col, start.row);
+    seen.insert(pos);
+    // seen.insert((0, pos.clone()));
+
+    let mut count = 0;
+
+    // We can always finish on the current square if we're taking an
+    // even number of steps
+    if mark_mod == 0 {
+        count += 1;
+    }
+
+    if max_steps > 0 {
+        queue.push_back((0, pos));
+    }
+
+    // println!("Steps starting at {max_steps}");
+    while let Some((steps, pos)) = queue.pop_front() {
+        for [dj, di] in [[0, 1], [0, -1], [1, 0], [-1, 0]] {
+            let (new_col, new_row) = (pos.0 + di, pos.1 + dj);
+            let new_pos = (new_col, new_row);
+            let new_steps = steps + 1;
+            // println!("{new_steps}");
+            // let new_state = (new_steps % 2, new_pos);
+            if !seen.contains(&new_pos) {
+                seen.insert(new_pos);
+                let c = map[modulo(new_row, width)][modulo(new_col, width)];
+                if c != '#' {
+                    if new_steps % 2 == mark_mod {
+                        count += 1;
+                    }
+                    if new_steps != max_steps {
+                        queue.push_back((new_steps, new_pos));
+                        // new_map[new_row][new_col] = 'O';
+                    }
+                }
+            }
+        }
+    }
+
+    count
+}
+
+fn modulo(a: isize, b: isize) -> usize {
+    (((a % b) + b) % b) as usize
+}
+
 fn tests() -> anyhow::Result<()> {
     let input = r"...........
 .....###.#.
@@ -629,27 +751,34 @@ fn tests() -> anyhow::Result<()> {
 ...........
 ";
 
-    // let solution = part2(input, 6)?;
-    // assert_eq!(solution, 16);
-    // let solution = part2(input, 10)?;
-    // assert_eq!(solution, 50);
+    let solution = part2_slow(input, 6)?;
+    assert_eq!(solution, 16);
+    println!("Passed 16");
+    let solution = part2_slow(input, 10)?;
+    assert_eq!(solution, 50);
 
-    // let solution = part2(input, 50)?;
-    // assert_eq!(solution, 1594);
+    println!("Passed 10");
+    let solution = part2_slow(input, 50)?;
+    assert_eq!(solution, 1594);
 
-    // let solution = part2(input, 100)?;
-    // assert_eq!(solution, 6536);
+    println!("Passed 50");
+    let solution = part2_slow(input, 100)?;
+    assert_eq!(solution, 6536);
 
-    // let solution = part2(input, 26501365)?;
-    // assert_eq!(solution, 16733044);
+    println!("Passed 100");
+    let solution = part2_slow(input, 500)?;
+    assert_eq!(solution, 167004);
 
-    // let solution = part2(input, 500)?;
-    // assert_eq!(solution, 167004);
-
-    // let solution = part2(input, 1000)?;
+    // println!("Passed 500");
+    // let solution = part2_slow(input, 1000)?;
     // assert_eq!(solution, 668697);
 
-    // let solution = part2(input, 5000)?;
+    // println!("Passed 1000");
+    // let solution = part2_slow(input, 5000)?;
+    // assert_eq!(solution, 16733044);
+
+    // println!("Passed 5000");
+    // let solution = part2_slow(input, 26501365)?;
     // assert_eq!(solution, 16733044);
 
     Ok(())
