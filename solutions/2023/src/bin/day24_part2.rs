@@ -35,6 +35,15 @@ fn solve(input: &str) -> Result<usize> {
     let ctx = z3::Context::new(&z3::Config::new());
     let s = z3::Solver::new(&ctx);
 
+    // Since there are only 6 unknowns, we only need to look at 3
+    // hailstones.  This is because each set of 3 equations only
+    // introduces 1 new unknown, the time variable.  The net effect of
+    // each hailstone is to add two more equations than unknowns.
+    // With 3 hailstones we have 9 equations which is enough to
+    // resolve the 6 unknowns for the position and velocity of our
+    // thrown hailstone as well as the 3 introduced time variables.
+    let hailstones = hailstones.iter().take(3).collect_vec();
+
     // Create two real variables
     let x_0 = Real::new_const(&ctx, "x__0");
     let y_0 = Real::new_const(&ctx, "y__0");
