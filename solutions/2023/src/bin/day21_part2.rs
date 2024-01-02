@@ -18,13 +18,6 @@ struct IPos {
 
 #[aoc::main]
 fn solve(input: &str) -> Result<usize> {
-    // let steps = 5000;
-    // let expected = part2_slow(input, steps).unwrap();
-    // let got = part2(input, steps).unwrap();
-
-    // assert_eq!(got, expected);
-    // println!("expected ({expected}) == got ({got})");
-
     part2(input, 26501365)
 }
 
@@ -52,8 +45,6 @@ fn part2(input: &str, max_steps: usize) -> Result<usize> {
             }
         }
     }
-
-    // get_reachable_count_above
 
     // Add left and right columns
     let start_pos = start_pos.unwrap();
