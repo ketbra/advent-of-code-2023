@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 pub use aoc_macro::main;
 use clap::Parser;
-use regex::Regex;
+// use regex::Regex;
 use std::fmt::Display;
 use std::str::FromStr;
 use std::vec::Vec;
@@ -19,21 +19,21 @@ pub struct Cli {
 #[derive(Debug, Clone)]
 pub struct NoSolutionError;
 
-pub struct DenseGrid2D<T> {
-    cells: Vec<Vec<T>>,
-    rows: usize,
-    cols: usize,
-}
+// pub struct DenseGrid2D<T> {
+//     cells: Vec<Vec<T>>,
+//     rows: usize,
+//     cols: usize,
+// }
 
-impl<T> DenseGrid2D<T> {
-    fn get(&self, x: &usize, y: &usize) -> Option<&T> {
-        if *x >= self.cols || *y >= self.rows {
-            None
-        } else {
-            Some(&self.cells[*y][*x])
-        }
-    }
-}
+// impl<T> DenseGrid2D<T> {
+//     fn get(&self, x: &usize, y: &usize) -> Option<&T> {
+//         if *x >= self.cols || *y >= self.rows {
+//             None
+//         } else {
+//             Some(&self.cells[*y][*x])
+//         }
+//     }
+// }
 
 // Add regex methods to ToString types
 pub trait Searchable {
@@ -41,25 +41,58 @@ pub trait Searchable {
     fn recapture(&self, needle: &str) -> Option<Vec<&str>>;
 }
 
-impl Searchable for std::string::String {
-    fn rematch(&self, rx: &str) -> bool {
-        let re = Regex::new(rx).unwrap();
-        match re.captures(self.to_string().as_str()) {
-            Some(captures) => true,
-            None => false,
+// impl Searchable for std::string::String {
+//     fn rematch(&self, rx: &str) -> bool {
+//         let re = Regex::new(rx).unwrap();
+//         match re.captures(self.to_string().as_str()) {
+//             Some(captures) => true,
+//             None => false,
+//         }
+//     }
+//     fn recapture(&self, needle: &str) -> Option<Vec<&str>> {
+//         let re = Regex::new(needle).unwrap();
+//         match re.captures(self) {
+//             Some(captures) => Some(
+//                 captures
+//                     .iter()
+//                     .skip(1) // Skip the first capture group (the entire match)
+//                     .filter_map(|capture| capture.map(|c| c.as_str()))
+//                     .collect::<Vec<_>>(),
+//             ),
+//             None => None,
+//         }
+//     }
+// }
+
+pub fn lcm(numbers: Vec<u64>) -> u64 {
+    let mut temp = numbers.clone();
+
+    // check all the same
+    loop {
+        let mut same = true;
+
+        for idx in 1..temp.len() {
+            if temp[0] != temp[idx] {
+                same = false;
+                break;
+            }
         }
-    }
-    fn recapture(&self, needle: &str) -> Option<Vec<&str>> {
-        let re = Regex::new(needle).unwrap();
-        match re.captures(self) {
-            Some(captures) => Some(
-                captures
-                    .iter()
-                    .skip(1) // Skip the first capture group (the entire match)
-                    .filter_map(|capture| capture.map(|c| c.as_str()))
-                    .collect::<Vec<_>>(),
-            ),
-            None => None,
+
+        if same {
+            return temp[0];
+        }
+
+        // Find lowest index
+        match temp
+            .iter()
+            .enumerate()
+            .min_by(|(_, a), (_, b)| a.cmp(b))
+            .map(|(index, _)| index)
+        {
+            Some(idx) => {
+                temp[idx] += numbers[idx];
+            }
+            None => panic!("Not possible"),
         }
     }
 }
