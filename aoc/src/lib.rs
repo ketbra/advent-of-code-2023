@@ -169,7 +169,7 @@ struct Puzzle {
 
 fn puzzle_from_file_name(path: &str) -> Result<Puzzle> {
     let (_, year, day, part) =
-        lazy_regex::regex_captures!(r#"/(\d{4})/src/bin/day(\d+)(?:_part(\d))?.rs$"#, path)
+        lazy_regex::regex_captures!(r#"/(\d{4})/src/bin/day(\d+)(?:_part(\d))?.*.rs$"#, path)
             .context("File must be named YYYY/src/bin/day\\d+.rs")?;
     let day = day
         .parse::<usize>()
