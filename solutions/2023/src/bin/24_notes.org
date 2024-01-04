@@ -1,0 +1,300 @@
+* Part 2 no solver notes
+
+$$ x_1 + \dot{x}_1*t_1 = x_0 + \dot{x}_0*t_1 $$
+
+$$ t_1 = (x_1 - x_0)/(\dot{x}_0 - \dot{x}_1) $$
+$$ t_1 = (y_1 - y_0)/(\dot{y}_0 - \dot{y}_1) $$
+$$ t_1 = (z_1 - z_0)/(\dot{z}_0 - \dot{z}_1) $$
+
+$$ (x_1 - x_0)/(\dot{x}_0 - \dot{x}_1) = (y_1 - y_0)/(\dot{y}_0 - \dot{y}_1) $$
+
+
+$$ (x_1 - x_0)*(\dot{y}_0 - \dot{y}_1) = (y_1 - y_0)*(\dot{x}_0 - \dot{x}_1) $$
+
+
+$$ x_1 * \dot{y}_0 - x_1*\dot{y}_1 - x_0*\dot{y}_0 + x_0*\dot{y}_1 = y_1*\dot{x}_0 - y_1*\dot{x}_1 - y_0*\dot{x}_0 + y_0*\dot{x}_1 $$
+
+$$ \dot{y}_1*x_0 - \dot{x}_1*y_0 - y_1*\dot{x}_0 + x_1 * \dot{y}_0 = (x_1*\dot{y}_1 - y_1*\dot{x}_1)  + (x_0*\dot{y}_0 - y_0*\dot{x}_0)  $$
+
+Symmetry:
+$$ \dot{y}_2*x_0 - \dot{x}_2*y_0 - y_2*\dot{x}_0 + x_2 * \dot{y}_0 = (x_2*\dot{y}_2 - y_2*\dot{x}_2) + (x_0*\dot{y}_0 - y_0*\dot{x}_0)  $$
+
+Subtract to two equations eliminate nonlinear term
+$$ (\dot{y}_1 - \dot{y}_2)*x_0 + (\dot{x}_2 - \dot{x}_1)*y_0 + (y_2 - y_1)*\dot{x}_0 + (x_1 - x_2) * \dot{y}_0 = x_1*\dot{y}_1 - y_1*\dot{x}_1 - x_2*\dot{y}_2 + y_2*\dot{x}_2  $$
+
+Symmetry
+$$ (\dot{z}_1 - \dot{z}_2)*x_0 + (\dot{x}_2 - \dot{x}_1)*z_0 + (z_2 - z_1)*\dot{x}_0 + (x_1 - x_2) * \dot{z}_0 = x_1*\dot{z}_1 - z_1*\dot{x}_1 - x_2*\dot{z}_2 + z_2*\dot{x}_2  $$
+$$ (\dot{z}_1 - \dot{z}_2)*y_0 + (\dot{y}_2 - \dot{y}_1)*z_0 + (z_2 - z_1)*\dot{y}_0 + (y_1 - y_2) * \dot{z}_0 = y_1*\dot{z}_1 - z_1*\dot{y}_1 - y_2*\dot{z}_2 + z_2*\dot{y}_2  $$
+
+Can now produce a system of linear equations, put them into a matrix A.
+
+$$ AX = B $$
+
+Calcualte $A^{-1}$ in order to calculate X
+$$A^{-1}AX = A^{-1}B = X $$
+
+
+* Misc Notes
+x1, y1
+dx1/dt, dy1/dt, vx1, vy1
+
+y1/dx1 = (dy1/dt)/(dx1/dt1) = vy1/vx1
+
+x2, y2,
+dx2, dy2
+
+y1 = ax1 + b
+
+dy1/dx1 = m = vy1/vx1
+
+
+y1 = (vy1/vx1)x1 + b
+
+b = y1 - (vy1/vx1)x1
+
+b = y1
+
+y1(t)
+
+
+d = rt
+
+x1(t) = vx1*t + x1
+
+vx1*t + x1 = vx2*t + x2
+
+tc = (x1 - x2)/(vx2 - vx1)
+tc = (y1 - y2)/(vy2 - vy1)
+
+(19 - 18)/(-1 - (-2) =
+
+
+x1(t) = x10 + v1*t
+
+dy/dt, dx/dt
+
+dy/dx =
+
+
+
+y1(x) = y10 + (vy1/vx1)x
+
+19 + -.5 * (14.33)
+
+y10 + (vy1/vx1)x = y20 + (vy2/vx2)x
+
+x = (y10 - y20)/((vy1/vx1) - (vy2/vx2))
+
+(19 - 18)/((1/-2) - (-1/-1))
+
+= 1/(-0.5 - 1) = 1/(-1.5)
+
+
+
+20, 19
+1, -5
+
+y(t) = 19 + -5*t = 19 - 5t
+
+y(t) = 19 + -5t
+x(t) = 20 + +1*t = 20 + t
+
+20, 19
+21, 14
+
+y = x*(14 - 19)/(21 - 20) + 20 = -5x + 19
+
+y = vy1 * x + y1_0
+
+
+y = vy2 * t + y2_0
+
+vy2 * t + y2_0 = vy1 * t + y1_0
+
+t = (y1_0 - y2_0)/(vy2 - vy1)
+
+(13-19)/(-1 - 1)
+
+t = 3
+
+x(t) = 19 + -2*3
+
+y = mx + b
+
+y = -0.5x + 13
+
+-.5 * 14.333 + 13
+
+
+Hailstone A: 19, 13, 30 @ -2, 1, -2
+Hailstone B: 20, 19, 15 @ 1, -5, -3
+Hailstones' paths crossed in the past for hailstone A.
+
+x1 = 19
+vx1 = -2
+
+x2 = 20
+vx2 = 1
+
+
+
+
+x(t) = x0 + vx*t
+y(t) = y0 + vy*t
+
+
+[
+x0 + vx*t,
+y0 + vy*t
+}
+
+
+
+$x1 + vx1*t1 = x_0 + vx0*t1$
+
+$x1 + vx1*t1 = x0 + vx0*t1$
+
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 3.0))
+
+y1 + vy1*t1 = y0 + vy0*t1
+z1 + vz1*t1 = z0 + vz0*t1
+ (set-default 'preview-scale-function 1.2)
+x0 +vx0t1 -vx1t1 = x1
+
+x0 + (vx0 - vx1)t1 = x1
+y0 + (vy0 - vy1)t1 = y1
+z0 + (vz0 - vz1)t1 = z1
+
+x0 + (vx0 - vx2)t2 = x2
+y0 + (vy0 - vy2)t2 = y2
+z0 + (vz0 - vz2)t2 = z2
+
+x0 + (vx0 - vx3)t3 = x3
+y0 + (vy0 - vy3)t3 = y3
+z0 + (vz0 - vz3)t3 = z3
+
+
+t1 = (x1 - x0)/(vx0 - vx1)
+
+y0 + (vy0 - vy1)t1 = y1 = y0 + (vy0 - vy1)*(x1 - x0)/(vx0 - vx1)
+
+x1 = x0 + (vx0 - vx1)*(y1 - y0)/(vy0 - vy1)
+
+x1*vy0 - x1*vy1 = x0*vy0 - x0*vy1 + vx0*y1 - vx1*y0
+
+vy1*x0 + vx1*y0 - y1*vx0 + x1*vy0  = x0*vy0 + x1*vy1
+
+
+y1 = y0 + (vy0 - vy1)*(x1 - x0)/(vx0 - vx1)
+z1 = z0 + (vz0 - vz1)*(x1 - x0)/(vx0 - vx1)
+
+y2 = y0 + (vy0 - vy2)*(x2 - x0)/(vx0 - vx2)
+z2 = z0 + (vz0 - vz2)*(x2 - x0)/(vx0 - vx2)
+
+
+y1 - y2 = (vy0 - vy1)*(x1 - x0)/(vx0 - vx1) - (vy0 - vy2)*(x2 - x0)/(vx0 - vx2)
+z1 - z2 = (vz0 - vz1)*(x1 - x0)/(vx0 - vx1) - (vz0 - vz2)*(x2 - x0)/(vx0 - vx2)
+
+(y1 - y2)*(vx0 - vx1)*(vx0 - vx2) = (vy0 - vy1)*(x1 - x0)*(vx0 - vx2) - (vy0 - vy2)*(x2 - x0)*(vx0 - vx1)
+
+a*(vx0^2 - vx1vx0 + vx2vx0 + vx1*vx2) = v
+
+
+a, b, c, d, e, f, g, h, k
+
+
+x0 + vx0t1 = x1 + vx1t1
+
+19, 13, 30 @ -2,  1, -2
+18, 19, 22 @ -1, -1, -2
+20, 25, 34 @ -2, -2, -4
+12, 31, 28 @ -1, -2, -1
+20, 19, 15 @  1, -5, -3
+
+x + a*t1 = 19 -2*t1,
+y + b*t1 = 13 + t1,
+z + c*t1 = 30 -2*t1,
+x + a*t2 = 18 - t2,
+y + b*t2 = 19 - t2,
+z + c*t2 = 22 -2*t2,
+x + a*t3 = 20 - 2*t3,
+y + b*t3 = 25 - 2*t3,
+z + c*t3 = 34 - 4*t3
+
+
+x + a*d = 19 -2*d,
+y + b*d = 13 + d,
+z + c*d = 30 -2*d,
+x + a*e = 18 - e,
+y + b*e = 19 - e,
+z + c*e = 22 -2*e,
+x + a*f = 20 - 2*f,
+y + b*f = 25 - 2*f,
+z + c*f = 34 - 4*f
+
+
+
+x + a*t1 = 19 -2*t1;y + b*t1 = 13 + t1;z + c*t1 = 30 -2*t1;x + a*t2 = 18 - t2;y + b*t2 = 19 - t2;z + c*t2 = 22 -2*t2;x + a*t3 = 20 - 2*t3;y + b*t3 = 25 - 2*t3;z + c*t3 = 34 - 4*t3
+
+
+
+x1=19
+vx1=-2
+y1=13
+vy1=1
+z1=30
+vz1=-2
+
+x2=18
+vz2=-1
+y2=19
+vy2=-1
+z2=22
+vz2=-2
+
+x3=20
+vz3=-2
+y3=25
+vy3=-2
+z3=34
+vz3=-4
+
+
+
+
+x+a*d=147847636573416+185d,
+y+b*d=190826994408605+49d,
+z+c*d=140130741291716+219d,
+x+a*e=287509258905812-26e,
+y+b*e=207449079739538+31e,
+z+c*e=280539021150559+8e,
+
+x+a*f=390970075767404-147f
+,
+y+b*f=535711685410735-453f,z+c*f=404166182422876-149f
+
+
+
+
+147847636573416, 190826994408605, 140130741291716 @ 185, 49, 219
+287509258905812, 207449079739538, 280539021150559 @ -26, 31, 8
+390970075767404, 535711685410735, 404166182422876 @ -147, -453, -149
+
+
+x = 390970075767404
+y = 226195425713131238783606819606/1232794013893999 = 183481930609520.72
+z = 466980968436673869995870521057/1232794013893999 = 378798861102214.06
+vx = -147
+vy = 59
+vz = -107
+
+390970075767404 + 183481930609520.72 + 378798861102214.06
+
+300830018159322, 174296199703666, 295138452116897 @ -31, 9, -9
+267864842067030, 150400085066932, 284878281461219 @ 16, -15, 6
+
+239319225684810, 414577431892772, 282153566338659 @ 50, -26, -38
+239416086526980, 409491280232032, 274677642967319 @ 50, 114, 12
+
+
+Good z3 example: https://simonvandevelde.be/posts/Verbal_Arithmetic_In_Rust_And_Z3.html
