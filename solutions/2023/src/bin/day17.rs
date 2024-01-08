@@ -27,7 +27,6 @@ impl Pos {
     // }
 
     fn neighbors(&self, map: &Vec<Vec<u32>>) -> Vec<(Pos, u32)> {
-        println!("Get neighbors");
         let mut neighbors: Vec<Pos> = Vec::new();
 
         // Straight
