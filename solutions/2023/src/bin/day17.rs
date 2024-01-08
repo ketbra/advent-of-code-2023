@@ -1,6 +1,8 @@
 use anyhow::Result;
 use itertools::Itertools;
 use pathfinding::prelude::astar;
+use pathfinding::prelude::dijkstra_all;
+use std::collections::HashMap;
 use Direction::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy, Hash)]
@@ -20,13 +22,13 @@ struct Pos {
 }
 
 impl Pos {
-    fn distance(&self, other: &Pos) -> usize {
-        self.row.abs_diff(other.row) + self.col.abs_diff(other.col)
-    }
+    // fn distance(&self, other: &Pos) -> usize {
+    //     self.row.abs_diff(other.row) + self.col.abs_diff(other.col)
+    // }
 
     fn neighbors(&self, map: &Vec<Vec<u32>>) -> Vec<(Pos, u32)> {
+        println!("Get neighbors");
         let mut neighbors: Vec<Pos> = Vec::new();
-        // let mut points_to_consider: Vec<Pos> = Vec::new();
 
         // Straight
         if self.steps_in_same_direction < 3 {
@@ -178,6 +180,12 @@ fn solve(input: &str) -> Result<u32> {
         .map(|line| line.chars().map(|c| c.to_digit(10).unwrap()).collect_vec())
         .collect_vec();
 
+    // Create a heuristic ditance map indicating the best case distance of a cell from the end.
+    // We create the heuristic using dijkstra based on the problem without the turning restrictions.
+    // Creating this better heuristic first turns out to be worth the effort and saves time in the overall
+    // process.
+    let heuristic_map = get_heuristic_map(&map);
+
     let starts = vec![
         Pos {
             row: 0,
@@ -206,7 +214,13 @@ fn solve(input: &str) -> Result<u32> {
             astar(
                 start,
                 |p| p.neighbors(&map),
-                |p| p.distance(&end) as u32,
+                |p| {
+                    if p.col == end.col && p.row == end.row {
+                        return 0;
+                    }
+
+                    heuristic_map.get(&(p.col, p.row)).unwrap().1 as u32
+                },
                 |p| p.row == end.row && p.col == end.col,
             )
             .map(|found| found.1)
@@ -216,6 +230,27 @@ fn solve(input: &str) -> Result<u32> {
         .unwrap();
 
     Ok(answer)
+}
+
+fn get_heuristic_map(map: &Vec<Vec<u32>>) -> HashMap<(usize, usize), ((usize, usize), usize)> {
+    let rows = map.len();
+    let cols = map[0].len();
+
+    let successors = |n: &(usize, usize)| -> Vec<((usize, usize), usize)> {
+        let (c, r) = n;
+        let mut neighbors = vec![];
+        for (dc, dr) in [(0, 1), (1, 0), (0, -1), (-1, 0)] {
+            let (nc, nr) = (*c as isize + dc, *r as isize + dr);
+            if nc >= 0 && nr >= 0 && nr < rows as isize && nc < cols as isize {
+                let (nc, nr) = (nc as usize, nr as usize);
+                neighbors.push(((nc, nr), map[nr][nc].clone() as usize));
+            }
+        }
+
+        neighbors
+    };
+
+    dijkstra_all(&(cols - 1, rows - 1), successors)
 }
 
 fn tests() -> anyhow::Result<()> {
