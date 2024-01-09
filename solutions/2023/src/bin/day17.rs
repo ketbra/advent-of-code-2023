@@ -3,6 +3,7 @@ use itertools::Itertools;
 use pathfinding::prelude::astar;
 use pathfinding::prelude::dijkstra_all;
 use std::collections::HashMap;
+use std::time::Instant;
 use Direction::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy, Hash)]
@@ -18,155 +19,44 @@ struct Pos {
     row: usize,
     col: usize,
     direction: Direction,
-    steps_in_same_direction: usize,
 }
 
 impl Pos {
-    // fn distance(&self, other: &Pos) -> usize {
-    //     self.row.abs_diff(other.row) + self.col.abs_diff(other.col)
-    // }
-
     fn neighbors(&self, map: &Vec<Vec<u32>>) -> Vec<(Pos, u32)> {
-        let mut neighbors: Vec<Pos> = Vec::new();
+        let mut neighbors: Vec<(Pos, u32)> = Vec::new();
 
-        // Straight
-        if self.steps_in_same_direction < 3 {
-            match self.direction {
-                North => {
-                    if self.row > 0 {
-                        neighbors.push(Pos {
-                            col: self.col,
-                            row: self.row - 1,
-                            direction: self.direction,
-                            steps_in_same_direction: self.steps_in_same_direction + 1,
-                        })
-                    }
+        let moves = match self.direction {
+            East | West => [
+                (North, [(0, -1), (0, -2), (0, -3)]),
+                (South, [(0, 1), (0, 2), (0, 3)]),
+            ],
+            North | South => [
+                (West, [(-1, 0), (-2, 0), (-3, 0)]),
+                (East, [(1, 0), (2, 0), (3, 0)]),
+            ],
+        };
+
+        let rows = map.len();
+        let cols = map[0].len();
+
+        for (dir, deltas) in moves {
+            let mut cost = 0;
+            for (dc, dr) in deltas {
+                let (nc, nr) = (self.col as isize + dc, self.row as isize + dr);
+                if nc >= 0 && nr >= 0 && nr < rows as isize && nc < cols as isize {
+                    let (nc, nr) = (nc as usize, nr as usize);
+                    cost += map[nr][nc];
+                    neighbors.push((
+                        Pos {
+                            col: nc,
+                            row: nr,
+                            direction: dir,
+                        },
+                        cost,
+                    ));
                 }
-                South => {
-                    if self.row < map.len() - 1 {
-                        neighbors.push(Pos {
-                            col: self.col,
-                            row: self.row + 1,
-                            direction: self.direction,
-                            steps_in_same_direction: self.steps_in_same_direction + 1,
-                        })
-                    }
-                }
-                East => {
-                    if self.col < map[0].len() - 1 {
-                        neighbors.push(Pos {
-                            col: self.col + 1,
-                            row: self.row,
-                            direction: self.direction,
-                            steps_in_same_direction: self.steps_in_same_direction + 1,
-                        })
-                    }
-                }
-                West => {
-                    if self.col > 0 {
-                        neighbors.push(Pos {
-                            col: self.col - 1,
-                            row: self.row,
-                            direction: self.direction,
-                            steps_in_same_direction: self.steps_in_same_direction + 1,
-                        })
-                    }
-                }
-            };
+            }
         }
-
-        // Left
-        match self.direction {
-            North => {
-                if self.col > 0 {
-                    neighbors.push(Pos {
-                        col: self.col - 1,
-                        row: self.row,
-                        direction: West,
-                        steps_in_same_direction: 1,
-                    })
-                }
-            }
-            South => {
-                if self.col < map[0].len() - 1 {
-                    neighbors.push(Pos {
-                        col: self.col + 1,
-                        row: self.row,
-                        direction: East,
-                        steps_in_same_direction: 1,
-                    })
-                }
-            }
-            East => {
-                if self.row > 0 {
-                    neighbors.push(Pos {
-                        col: self.col,
-                        row: self.row - 1,
-                        direction: North,
-                        steps_in_same_direction: 1,
-                    })
-                }
-            }
-            West => {
-                if self.row < map.len() - 1 {
-                    neighbors.push(Pos {
-                        col: self.col,
-                        row: self.row + 1,
-                        direction: South,
-                        steps_in_same_direction: 1,
-                    })
-                }
-            }
-        };
-
-        // Right
-        match self.direction {
-            North => {
-                if self.col < map[0].len() - 1 {
-                    neighbors.push(Pos {
-                        col: self.col + 1,
-                        row: self.row,
-                        direction: East,
-                        steps_in_same_direction: 1,
-                    })
-                }
-            }
-            South => {
-                if self.col > 0 {
-                    neighbors.push(Pos {
-                        col: self.col - 1,
-                        row: self.row,
-                        direction: West,
-                        steps_in_same_direction: 1,
-                    })
-                }
-            }
-            East => {
-                if self.row < map.len() - 1 {
-                    neighbors.push(Pos {
-                        col: self.col,
-                        row: self.row + 1,
-                        direction: South,
-                        steps_in_same_direction: 1,
-                    })
-                }
-            }
-            West => {
-                if self.row > 0 {
-                    neighbors.push(Pos {
-                        col: self.col,
-                        row: self.row - 1,
-                        direction: North,
-                        steps_in_same_direction: 1,
-                    })
-                }
-            }
-        };
-
-        let neighbors = neighbors
-            .iter()
-            .map(|n| (n.to_owned(), map[n.row][n.col]))
-            .collect_vec();
 
         neighbors
     }
@@ -174,6 +64,8 @@ impl Pos {
 
 #[aoc::main]
 fn solve(input: &str) -> Result<u32> {
+    let now = Instant::now();
+
     let map = aoc::parse_list::<String>(input)?
         .iter()
         .map(|line| line.chars().map(|c| c.to_digit(10).unwrap()).collect_vec())
@@ -183,28 +75,27 @@ fn solve(input: &str) -> Result<u32> {
     // We create the heuristic using dijkstra based on the problem without the turning restrictions.
     // Creating this better heuristic first turns out to be worth the effort and saves time in the overall
     // process.
+    let heuristic_map_start = Instant::now();
     let heuristic_map = get_heuristic_map(&map);
+    let heuristic_map_elapsed = heuristic_map_start.elapsed().as_millis();
 
     let starts = vec![
         Pos {
             row: 0,
             col: 0,
             direction: East,
-            steps_in_same_direction: 1,
         },
         Pos {
             row: 0,
             col: 0,
             direction: South,
-            steps_in_same_direction: 1,
         },
     ];
 
     let end = Pos {
         row: map.len() - 1,
         col: map[0].len() - 1,
-        direction: East,            // Ignored in goal test
-        steps_in_same_direction: 1, // Ignored in goal test
+        direction: East, // Ignored in goal test
     };
 
     let answer = starts
@@ -228,6 +119,9 @@ fn solve(input: &str) -> Result<u32> {
         .min()
         .unwrap();
 
+    let elapsed = now.elapsed().as_millis();
+    println!("Generated heuristic map in {heuristic_map_elapsed} ms");
+    println!("Solve took {elapsed} ms");
     Ok(answer)
 }
 
@@ -242,7 +136,7 @@ fn get_heuristic_map(map: &Vec<Vec<u32>>) -> HashMap<(usize, usize), ((usize, us
             let (nc, nr) = (*c as isize + dc, *r as isize + dr);
             if nc >= 0 && nr >= 0 && nr < rows as isize && nc < cols as isize {
                 let (nc, nr) = (nc as usize, nr as usize);
-                neighbors.push(((nc, nr), map[nr][nc].clone() as usize));
+                neighbors.push(((nc, nr), map[nr][nc] as usize));
             }
         }
 
